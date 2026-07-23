@@ -13,23 +13,93 @@ public:
         dynamicArray = new int[size];
     }
 
+    
+    Vector(const Vector& other)
+    {
+        size = other.size;
+        dynamicArray = new int[size];
+
+        for (unsigned int i = 0; i < size; i++)
+        {
+            dynamicArray[i] = other.dynamicArray[i];
+        }
+    }
+
     ~Vector()
     {
         delete[] dynamicArray;
+    }
+
+    
+    Vector& operator=(const Vector& other)
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+
+        int* newArray = new int[other.size];
+
+        for (unsigned int i = 0; i < other.size; i++)
+        {
+            newArray[i] = other.dynamicArray[i];
+        }
+
+        delete[] dynamicArray;
+
+        dynamicArray = newArray;
+        size = other.size;
+
+        return *this;
+    }
+
+    
+    int& operator[](unsigned int index)
+    {
+        return dynamicArray[index];
+    }
+
+   
+    const int& operator[](unsigned int index) const
+    {
+        return dynamicArray[index];
+    }
+
+    bool operator==(const Vector& other) const
+    {
+        if (size != other.size)
+        {
+            return false;
+        }
+
+        for (unsigned int i = 0; i < size; i++)
+        {
+            if (dynamicArray[i] != other.dynamicArray[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool operator!=(const Vector& other) const
+    {
+        return !(*this == other);
     }
 
     void resize(int newSize)
     {
         int* newArray = new int[newSize];
 
-        int copySize = size;
+        unsigned int copySize = size;
 
         if (newSize < size)
         {
             copySize = newSize;
         }
 
-        for (int i = 0; i < copySize; i++)
+        for (unsigned int i = 0; i < copySize; i++)
         {
             newArray[i] = dynamicArray[i];
         }
@@ -55,24 +125,30 @@ int main()
 {
     Vector myVector(3);
 
-    myVector.set(0, 66);
-    myVector.set(1, 69);
-    myVector.set(2, 93);
+    myVector[0] = 66;
+    myVector[1] = 69;
+    myVector[2] = 93;
 
-    std::cout << myVector.get(0) << '\n';
-    std::cout << myVector.get(1) << '\n';
-    std::cout << myVector.get(2) << '\n';
+   
+    Vector copiedVector = myVector;
 
-    myVector.resize(5);
+    std::cout << copiedVector[0] << '\n';
+    std::cout << copiedVector[1] << '\n';
+    std::cout << copiedVector[2] << '\n';
 
-    myVector.set(3, 99);
-    myVector.set(4, 101);
+    Vector assignedVector(1);
 
-    std::cout << myVector.get(0) << '\n';
-    std::cout << myVector.get(1) << '\n';
-    std::cout << myVector.get(2) << '\n';
-    std::cout << myVector.get(3) << '\n';
-    std::cout << myVector.get(4) << '\n';
+    
+    assignedVector = myVector;
+
+    std::cout << std::boolalpha;
+
+    std::cout << (myVector == copiedVector) << '\n';
+    std::cout << (myVector != assignedVector) << '\n';
+
+    copiedVector[0] = 100;
+
+    std::cout << (myVector == copiedVector) << '\n';
 
     return 0;
 }
