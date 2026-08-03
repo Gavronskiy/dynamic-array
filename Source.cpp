@@ -1,10 +1,20 @@
 #include <iostream>
+#include <stdexcept>
 
 class Vector
 {
 private:
     unsigned int size = 0;
     int* dynamicArray = nullptr;
+
+    void checkIndex(int index) const
+    {
+        if (index < 0 ||
+            static_cast<unsigned int>(index) >= size)
+        {
+            throw std::out_of_range("Index is out of range");
+        }
+    }
 
 public:
     Vector(int sizeOfArray)
@@ -13,7 +23,6 @@ public:
         dynamicArray = new int[size];
     }
 
-    
     Vector(const Vector& other)
     {
         size = other.size;
@@ -30,7 +39,6 @@ public:
         delete[] dynamicArray;
     }
 
-    
     Vector& operator=(const Vector& other)
     {
         if (this == &other)
@@ -53,15 +61,15 @@ public:
         return *this;
     }
 
-    
-    int& operator[](unsigned int index)
+    int& operator[](int index)
     {
+        checkIndex(index);
         return dynamicArray[index];
     }
 
-   
-    const int& operator[](unsigned int index) const
+    const int& operator[](int index) const
     {
+        checkIndex(index);
         return dynamicArray[index];
     }
 
@@ -112,11 +120,13 @@ public:
 
     void set(int index, int newValue)
     {
+        checkIndex(index);
         dynamicArray[index] = newValue;
     }
 
     int get(int index) const
     {
+        checkIndex(index);
         return dynamicArray[index];
     }
 };
@@ -129,7 +139,6 @@ int main()
     myVector[1] = 69;
     myVector[2] = 93;
 
-   
     Vector copiedVector = myVector;
 
     std::cout << copiedVector[0] << '\n';
@@ -138,7 +147,6 @@ int main()
 
     Vector assignedVector(1);
 
-    
     assignedVector = myVector;
 
     std::cout << std::boolalpha;
@@ -149,6 +157,17 @@ int main()
     copiedVector[0] = 100;
 
     std::cout << (myVector == copiedVector) << '\n';
+
+    try
+    {
+        std::cout << myVector[5] << '\n';
+    }
+    catch (const std::out_of_range& exception)
+    {
+        std::cout << "Error: "
+            << exception.what()
+            << '\n';
+    }
 
     return 0;
 }
