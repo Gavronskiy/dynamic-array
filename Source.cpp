@@ -73,6 +73,11 @@ public:
         return dynamicArray[index];
     }
 
+    explicit operator bool() const
+    {
+        return size > 0;
+    }
+
     bool operator==(const Vector& other) const
     {
         if (size != other.size)
@@ -150,6 +155,11 @@ int main()
     assignedVector = myVector;
 
     std::cout << std::boolalpha;
+
+    Vector emptyVector(0);
+
+    std::cout << static_cast<bool>(myVector) << '\n';
+    std::cout << static_cast<bool>(emptyVector) << '\n';
 
     std::cout << (myVector == copiedVector) << '\n';
     std::cout << (myVector != assignedVector) << '\n';
