@@ -1,36 +1,48 @@
 #include <iostream>
 #include <stdexcept>
+#include <cstddef>
 
+template <typename T>
 class Vector
 {
 private:
-    unsigned int size = 0;
-    int* dynamicArray = nullptr;
+    std::size_t size = 0;
+    T* dynamicArray = nullptr;
 
     void checkIndex(int index) const
     {
         if (index < 0 ||
-            static_cast<unsigned int>(index) >= size)
+            static_cast<std::size_t>(index) >= size)
         {
             throw std::out_of_range("Index is out of range");
         }
     }
 
 public:
-    Vector(int sizeOfArray)
+    Vector() = default;
+
+    explicit Vector(std::size_t sizeOfArray)
     {
         size = sizeOfArray;
-        dynamicArray = new int[size];
+
+        if (size > 0)
+        {
+            dynamicArray = new T[size];
+        }
     }
 
-    Vector(const Vector& other)
+    Vector(const Vector<T>& other)
     {
         size = other.size;
-        dynamicArray = new int[size];
 
-        for (unsigned int i = 0; i < size; i++)
+        if (size > 0)
         {
-            dynamicArray[i] = other.dynamicArray[i];
+            dynamicArray = new T[size];
+
+            for (std::size_t i = 0; i < size; i++)
+            {
+                dynamicArray[i] = other.dynamicArray[i];
+            }
         }
     }
 
@@ -39,18 +51,23 @@ public:
         delete[] dynamicArray;
     }
 
-    Vector& operator=(const Vector& other)
+    Vector<T>& operator=(const Vector<T>& other)
     {
         if (this == &other)
         {
             return *this;
         }
 
-        int* newArray = new int[other.size];
+        T* newArray = nullptr;
 
-        for (unsigned int i = 0; i < other.size; i++)
+        if (other.size > 0)
         {
-            newArray[i] = other.dynamicArray[i];
+            newArray = new T[other.size];
+
+            for (std::size_t i = 0; i < other.size; i++)
+            {
+                newArray[i] = other.dynamicArray[i];
+            }
         }
 
         delete[] dynamicArray;
@@ -61,13 +78,13 @@ public:
         return *this;
     }
 
-    int& operator[](int index)
+    T& operator[](int index)
     {
         checkIndex(index);
         return dynamicArray[index];
     }
 
-    const int& operator[](int index) const
+    const T& operator[](int index) const
     {
         checkIndex(index);
         return dynamicArray[index];
@@ -78,14 +95,14 @@ public:
         return size > 0;
     }
 
-    bool operator==(const Vector& other) const
+    bool operator==(const Vector<T>& other) const
     {
         if (size != other.size)
         {
             return false;
         }
 
-        for (unsigned int i = 0; i < size; i++)
+        for (std::size_t i = 0; i < size; i++)
         {
             if (dynamicArray[i] != other.dynamicArray[i])
             {
@@ -96,23 +113,28 @@ public:
         return true;
     }
 
-    bool operator!=(const Vector& other) const
+    bool operator!=(const Vector<T>& other) const
     {
         return !(*this == other);
     }
 
-    void resize(int newSize)
+    void resize(std::size_t newSize)
     {
-        int* newArray = new int[newSize];
+        T* newArray = nullptr;
 
-        unsigned int copySize = size;
+        if (newSize > 0)
+        {
+            newArray = new T[newSize];
+        }
+
+        std::size_t copySize = size;
 
         if (newSize < size)
         {
             copySize = newSize;
         }
 
-        for (unsigned int i = 0; i < copySize; i++)
+        for (std::size_t i = 0; i < copySize; i++)
         {
             newArray[i] = dynamicArray[i];
         }
@@ -123,13 +145,13 @@ public:
         size = newSize;
     }
 
-    void set(int index, int newValue)
+    void set(int index, const T& newValue)
     {
         checkIndex(index);
         dynamicArray[index] = newValue;
     }
 
-    int get(int index) const
+    T get(int index) const
     {
         checkIndex(index);
         return dynamicArray[index];
@@ -138,43 +160,41 @@ public:
 
 int main()
 {
-    Vector myVector(3);
+    Vector<int> intVector;
 
-    myVector[0] = 66;
-    myVector[1] = 69;
-    myVector[2] = 93;
+    intVector.resize(3);
+    intVector[0] = 66;
+    intVector[1] = 69;
+    intVector[2] = 93;
 
-    Vector copiedVector = myVector;
+    std::cout << "Vector<int>:\n";
 
-    std::cout << copiedVector[0] << '\n';
-    std::cout << copiedVector[1] << '\n';
-    std::cout << copiedVector[2] << '\n';
+    for (int i = 0; i < 3; i++)
+    {
+        std::cout << intVector[i] << '\n';
+    }
 
-    Vector assignedVector(1);
+    Vector<double> doubleVector;
 
-    assignedVector = myVector;
+    doubleVector.resize(3);
+    doubleVector[0] = 1.5;
+    doubleVector[1] = 2.75;
+    doubleVector[2] = 3.14;
 
-    std::cout << std::boolalpha;
+    std::cout << "\nVector<double>:\n";
 
-    Vector emptyVector(0);
-
-    std::cout << static_cast<bool>(myVector) << '\n';
-    std::cout << static_cast<bool>(emptyVector) << '\n';
-
-    std::cout << (myVector == copiedVector) << '\n';
-    std::cout << (myVector != assignedVector) << '\n';
-
-    copiedVector[0] = 100;
-
-    std::cout << (myVector == copiedVector) << '\n';
+    for (int i = 0; i < 3; i++)
+    {
+        std::cout << doubleVector[i] << '\n';
+    }
 
     try
     {
-        std::cout << myVector[5] << '\n';
+        std::cout << intVector[5] << '\n';
     }
     catch (const std::out_of_range& exception)
     {
-        std::cout << "Error: "
+        std::cout << "\nError: "
             << exception.what()
             << '\n';
     }
