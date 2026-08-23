@@ -3,10 +3,20 @@
 #include <cstddef>
 
 template <typename T>
+class Vector;
+
+template <typename T>
+std::ostream& operator<<(std::ostream& out, const Vector<T>& vector);
+
+template <typename T>
+std::istream& operator>>(std::istream& in, Vector<T>& vector);
+
+template <typename T>
 class Vector
 {
 private:
     std::size_t size = 0;
+    std::size_t capacity = 0;
     T* dynamicArray = nullptr;
 
     void checkIndex(int index) const
@@ -18,26 +28,42 @@ private:
         }
     }
 
+    void resize()
+    {
+        std::size_t newCapacity =
+            (capacity == 0) ? 1 : capacity * 2;
+
+        T* newArray = new T[newCapacity];
+
+        for (std::size_t i = 0; i < size; i++)
+        {
+            newArray[i] = dynamicArray[i];
+        }
+
+        delete[] dynamicArray;
+
+        dynamicArray = newArray;
+        capacity = newCapacity;
+    }
+
 public:
     Vector() = default;
 
     explicit Vector(std::size_t sizeOfArray)
+        : size(sizeOfArray), capacity(sizeOfArray)
     {
-        size = sizeOfArray;
-
-        if (size > 0)
+        if (capacity > 0)
         {
-            dynamicArray = new T[size];
+            dynamicArray = new T[capacity];
         }
     }
 
     Vector(const Vector<T>& other)
+        : size(other.size), capacity(other.capacity)
     {
-        size = other.size;
-
-        if (size > 0)
+        if (capacity > 0)
         {
-            dynamicArray = new T[size];
+            dynamicArray = new T[capacity];
 
             for (std::size_t i = 0; i < size; i++)
             {
@@ -60,9 +86,9 @@ public:
 
         T* newArray = nullptr;
 
-        if (other.size > 0)
+        if (other.capacity > 0)
         {
-            newArray = new T[other.size];
+            newArray = new T[other.capacity];
 
             for (std::size_t i = 0; i < other.size; i++)
             {
@@ -74,6 +100,7 @@ public:
 
         dynamicArray = newArray;
         size = other.size;
+        capacity = other.capacity;
 
         return *this;
     }
@@ -118,31 +145,15 @@ public:
         return !(*this == other);
     }
 
-    void resize(std::size_t newSize)
+    void push_back(const T& value)
     {
-        T* newArray = nullptr;
-
-        if (newSize > 0)
+        if (size == capacity)
         {
-            newArray = new T[newSize];
+            resize();
         }
 
-        std::size_t copySize = size;
-
-        if (newSize < size)
-        {
-            copySize = newSize;
-        }
-
-        for (std::size_t i = 0; i < copySize; i++)
-        {
-            newArray[i] = dynamicArray[i];
-        }
-
-        delete[] dynamicArray;
-
-        dynamicArray = newArray;
-        size = newSize;
+        dynamicArray[size] = value;
+        ++size;
     }
 
     void set(int index, const T& newValue)
@@ -156,7 +167,58 @@ public:
         checkIndex(index);
         return dynamicArray[index];
     }
+
+    std::size_t getSize() const
+    {
+        return size;
+    }
+
+    std::size_t getCapacity() const
+    {
+        return capacity;
+    }
+
+    template <typename U>
+    friend std::ostream& operator<<(
+        std::ostream& out,
+        const Vector<U>& vector);
+
+    template <typename U>
+    friend std::istream& operator>>(
+        std::istream& in,
+        Vector<U>& vector);
 };
+
+template <typename T>
+std::ostream& operator<<(
+    std::ostream& out,
+    const Vector<T>& vector)
+{
+    for (std::size_t i = 0; i < vector.size; i++)
+    {
+        if (i > 0)
+        {
+            out << ' ';
+        }
+
+        out << vector.dynamicArray[i];
+    }
+
+    return out;
+}
+
+template <typename T>
+std::istream& operator>>(
+    std::istream& in,
+    Vector<T>& vector)
+{
+    for (std::size_t i = 0; i < vector.size; i++)
+    {
+        in >> vector.dynamicArray[i];
+    }
+
+    return in;
+}
 
 template <typename T, std::size_t N>
 class StaticArray
@@ -257,102 +319,66 @@ public:
 
 int main()
 {
-    Vector<int> intVector;
+    Vector<int> numbers;
 
-    intVector.resize(3);
-    intVector[0] = 66;
-    intVector[1] = 69;
-    intVector[2] = 93;
+    int values[5] = { 66, 69, 93, 101, 202 };
 
-    std::cout << "Vector<int>:\n";
-
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 5; i++)
     {
-        std::cout << intVector[i] << '\n';
-    }
+        numbers.push_back(values[i]);
 
-    Vector<double> doubleVector;
-
-    doubleVector.resize(3);
-    doubleVector[0] = 1.5;
-    doubleVector[1] = 2.75;
-    doubleVector[2] = 3.14;
-
-    std::cout << "\nVector<double>:\n";
-
-    for (int i = 0; i < 3; i++)
-    {
-        std::cout << doubleVector[i] << '\n';
-    }
-
-    try
-    {
-        std::cout << intVector[5] << '\n';
-    }
-    catch (const std::out_of_range& exception)
-    {
-        std::cout << "\nVector error: "
-            << exception.what()
+        std::cout << "After push_back(" << values[i] << "): "
+            << "size = " << numbers.getSize()
+            << ", capacity = " << numbers.getCapacity()
             << '\n';
     }
 
-    StaticArray<int, 3> staticIntArray;
+    std::cout << "\nVector: " << numbers << '\n';
 
+    Vector<int> inputVector(3);
+
+    std::cout << "\nEnter 3 integers: ";
+    std::cin >> inputVector;
+    std::cout << "Input vector: " << inputVector << '\n';
+
+    Vector<int> copiedNumbers = numbers;
+    Vector<int> assignedNumbers;
+    assignedNumbers = numbers;
+
+    std::cout << std::boolalpha;
+    std::cout << "Copied vector is equal: "
+        << (numbers == copiedNumbers) << '\n';
+    std::cout << "Assigned vector is equal: "
+        << (numbers == assignedNumbers) << '\n';
+
+    try
+    {
+        std::cout << numbers[10] << '\n';
+    }
+    catch (const std::out_of_range& exception)
+    {
+        std::cout << "Vector error: "
+            << exception.what() << '\n';
+    }
+
+    StaticArray<int, 3> staticIntArray;
     staticIntArray[0] = 10;
     staticIntArray[1] = 20;
     staticIntArray[2] = 30;
 
-    std::cout << "\nStaticArray<int, 3>:\n";
+    std::cout << "StaticArray<int, 3>: ";
 
     for (int i = 0; i < 3; i++)
     {
-        std::cout << staticIntArray[i] << '\n';
+        if (i > 0)
+        {
+            std::cout << ' ';
+        }
+
+        std::cout << staticIntArray[i];
     }
 
-    StaticArray<double, 2> staticDoubleArray;
-
-    staticDoubleArray.set(0, 1.25);
-    staticDoubleArray.set(1, 2.5);
-
-    std::cout << "\nStaticArray<double, 2>:\n";
-
-    for (int i = 0; i < 2; i++)
-    {
-        std::cout << staticDoubleArray.get(i) << '\n';
-    }
-
-    StaticArray<int, 3> copiedStaticArray =
-        staticIntArray;
-
-    StaticArray<int, 3> assignedStaticArray;
-    assignedStaticArray = staticIntArray;
-
-    std::cout << std::boolalpha;
-
-    std::cout << "\nCopied arrays are equal: "
-        << (staticIntArray == copiedStaticArray)
-        << '\n';
-
-    std::cout << "Assigned arrays are equal: "
-        << (staticIntArray == assignedStaticArray)
-        << '\n';
-
-    copiedStaticArray[0] = 100;
-
-    std::cout << "Arrays are different after change: "
-        << (staticIntArray != copiedStaticArray)
-        << '\n';
-
-    try
-    {
-        std::cout << staticIntArray[5] << '\n';
-    }
-    catch (const std::out_of_range& exception)
-    {
-        std::cout << "\nStaticArray error: "
-            << exception.what()
-            << '\n';
-    }
+    std::cout << '\n';
 
     return 0;
 }
