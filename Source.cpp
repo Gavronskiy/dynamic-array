@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstddef>
+#include <iterator>
 
 template <typename T>
 class Vector;
@@ -21,8 +22,7 @@ private:
 
     void checkIndex(int index) const
     {
-        if (index < 0 ||
-            static_cast<std::size_t>(index) >= size)
+        if (index < 0 || static_cast<std::size_t>(index) >= size)
         {
             throw std::out_of_range("Index is out of range");
         }
@@ -30,9 +30,7 @@ private:
 
     void resize()
     {
-        std::size_t newCapacity =
-            (capacity == 0) ? 1 : capacity * 2;
-
+        std::size_t newCapacity = (capacity == 0) ? 1 : capacity * 2;
         T* newArray = new T[newCapacity]{};
 
         for (std::size_t i = 0; i < size; i++)
@@ -47,6 +45,146 @@ private:
     }
 
 public:
+    class Iterator
+    {
+    private:
+        T* ptr_;
+
+    public:
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = T*;
+        using reference = T&;
+
+        Iterator(T* ptr = nullptr)
+            : ptr_(ptr)
+        {
+        }
+
+        reference operator*() const
+        {
+            return *ptr_;
+        }
+
+        pointer operator->() const
+        {
+            return ptr_;
+        }
+
+        Iterator& operator++()
+        {
+            ++ptr_;
+            return *this;
+        }
+
+        Iterator operator++(int)
+        {
+            Iterator temp = *this;
+            ++ptr_;
+            return temp;
+        }
+
+        Iterator& operator--()
+        {
+            --ptr_;
+            return *this;
+        }
+
+        Iterator operator--(int)
+        {
+            Iterator temp = *this;
+            --ptr_;
+            return temp;
+        }
+
+        Iterator& operator+=(difference_type n)
+        {
+            if (n != 0)
+            {
+                ptr_ += n;
+            }
+
+            return *this;
+        }
+
+        Iterator& operator-=(difference_type n)
+        {
+            if (n != 0)
+            {
+                ptr_ -= n;
+            }
+
+            return *this;
+        }
+
+        Iterator operator+(difference_type n) const
+        {
+            Iterator temp = *this;
+            temp += n;
+            return temp;
+        }
+
+        Iterator operator-(difference_type n) const
+        {
+            Iterator temp = *this;
+            temp -= n;
+            return temp;
+        }
+
+        friend Iterator operator+(
+            difference_type n,
+            const Iterator& it)
+        {
+            return it + n;
+        }
+
+        difference_type operator-(const Iterator& other) const
+        {
+            if (ptr_ == other.ptr_)
+            {
+                return 0;
+            }
+
+            return ptr_ - other.ptr_;
+        }
+
+        reference operator[](difference_type n) const
+        {
+            return ptr_[n];
+        }
+
+        bool operator==(const Iterator& other) const
+        {
+            return ptr_ == other.ptr_;
+        }
+
+        bool operator!=(const Iterator& other) const
+        {
+            return ptr_ != other.ptr_;
+        }
+
+        bool operator<(const Iterator& other) const
+        {
+            return ptr_ < other.ptr_;
+        }
+
+        bool operator>(const Iterator& other) const
+        {
+            return ptr_ > other.ptr_;
+        }
+
+        bool operator<=(const Iterator& other) const
+        {
+            return ptr_ <= other.ptr_;
+        }
+
+        bool operator>=(const Iterator& other) const
+        {
+            return ptr_ >= other.ptr_;
+        }
+    };
+
     Vector() = default;
 
     explicit Vector(std::size_t sizeOfArray)
@@ -103,6 +241,21 @@ public:
         capacity = other.capacity;
 
         return *this;
+    }
+
+    Iterator begin()
+    {
+        return Iterator(dynamicArray);
+    }
+
+    Iterator end()
+    {
+        if (size == 0)
+        {
+            return begin();
+        }
+
+        return Iterator(dynamicArray + size);
     }
 
     T& operator[](int index)
@@ -256,8 +409,7 @@ private:
 
     void checkIndex(int index) const
     {
-        if (index < 0 ||
-            static_cast<std::size_t>(index) >= N)
+        if (index < 0 || static_cast<std::size_t>(index) >= N)
         {
             throw std::out_of_range("Index is out of range");
         }
@@ -307,8 +459,7 @@ public:
         return N > 0;
     }
 
-    bool operator==(
-        const StaticArray<T, N>& other) const
+    bool operator==(const StaticArray<T, N>& other) const
     {
         for (std::size_t i = 0; i < N; i++)
         {
@@ -321,8 +472,7 @@ public:
         return true;
     }
 
-    bool operator!=(
-        const StaticArray<T, N>& other) const
+    bool operator!=(const StaticArray<T, N>& other) const
     {
         return !(*this == other);
     }
@@ -370,6 +520,40 @@ int main()
 
     std::cout << "\nVector: " << numbers << '\n';
 
+    std::cout << "Using iterators: ";
+
+    for (Vector<int>::Iterator it = numbers.begin();
+        it != numbers.end();
+        ++it)
+    {
+        std::cout << *it << ' ';
+    }
+
+    std::cout << '\n';
+
+    std::cout << "Range-based for: ";
+
+    for (int value : numbers)
+    {
+        std::cout << value << ' ';
+    }
+
+    std::cout << '\n';
+
+    Vector<int>::Iterator it = numbers.begin();
+
+    std::cout << "First element: " << *it << '\n';
+    std::cout << "Third element: " << *(it + 2) << '\n';
+    std::cout << "Second element using iterator[]: "
+        << it[1] << '\n';
+    std::cout << "Iterator distance: "
+        << numbers.end() - numbers.begin() << '\n';
+
+    it = numbers.end();
+    --it;
+
+    std::cout << "Last element: " << *it << '\n';
+
     Vector<int> inputVector(3);
 
     std::cout << "\nEnter 3 integers: ";
@@ -381,8 +565,10 @@ int main()
     assignedNumbers = numbers;
 
     std::cout << std::boolalpha;
+
     std::cout << "Copied vector is equal: "
         << (numbers == copiedNumbers) << '\n';
+
     std::cout << "Assigned vector is equal: "
         << (numbers == assignedNumbers) << '\n';
 
@@ -397,6 +583,7 @@ int main()
     }
 
     StaticArray<int, 3> staticIntArray;
+
     staticIntArray[0] = 10;
     staticIntArray[1] = 20;
     staticIntArray[2] = 30;
