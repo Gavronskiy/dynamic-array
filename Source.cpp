@@ -33,7 +33,7 @@ private:
         std::size_t newCapacity =
             (capacity == 0) ? 1 : capacity * 2;
 
-        T* newArray = new T[newCapacity];
+        T* newArray = new T[newCapacity]{};
 
         for (std::size_t i = 0; i < size; i++)
         {
@@ -54,7 +54,7 @@ public:
     {
         if (capacity > 0)
         {
-            dynamicArray = new T[capacity];
+            dynamicArray = new T[capacity]{};
         }
     }
 
@@ -63,7 +63,7 @@ public:
     {
         if (capacity > 0)
         {
-            dynamicArray = new T[capacity];
+            dynamicArray = new T[capacity]{};
 
             for (std::size_t i = 0; i < size; i++)
             {
@@ -88,7 +88,7 @@ public:
 
         if (other.capacity > 0)
         {
-            newArray = new T[other.capacity];
+            newArray = new T[other.capacity]{};
 
             for (std::size_t i = 0; i < other.size; i++)
             {
@@ -172,24 +172,7 @@ public:
     {
         return size;
     }
-};
 
-template <typename T>
-void insertion_sort(Vector<T>& arr)
-{
-    for (std::size_t i = 1; i < arr.get_size(); i++)
-    {
-        T value = arr[static_cast<int>(i)];
-        int j = static_cast<int>(i) - 1;
-
-        while (j >= 0 && arr[j] > value)
-        {
-            arr[j + 1] = arr[j];
-            j--;
-        }
-
-        arr[j + 1] = value;
-    }
     std::size_t getSize() const
     {
         return size;
@@ -210,6 +193,24 @@ void insertion_sort(Vector<T>& arr)
         std::istream& in,
         Vector<U>& vector);
 };
+
+template <typename T>
+void insertion_sort(Vector<T>& arr)
+{
+    for (std::size_t i = 1; i < arr.get_size(); i++)
+    {
+        T value = arr[static_cast<int>(i)];
+        int j = static_cast<int>(i) - 1;
+
+        while (j >= 0 && arr[j] > value)
+        {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+
+        arr[j + 1] = value;
+    }
+}
 
 template <typename T>
 std::ostream& operator<<(
@@ -341,14 +342,20 @@ public:
 
 int main()
 {
-    Vector<int> numbers;
+    Vector<int> intVector(3);
 
-    intVector.resize(3);
     intVector[0] = 93;
     intVector[1] = 66;
     intVector[2] = 69;
 
+    std::cout << "Before sorting: " << intVector << '\n';
+
     insertion_sort(intVector);
+
+    std::cout << "After sorting: " << intVector << "\n\n";
+
+    Vector<int> numbers;
+
     int values[5] = { 66, 69, 93, 101, 202 };
 
     for (int i = 0; i < 5; i++)
