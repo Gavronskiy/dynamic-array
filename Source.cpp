@@ -168,6 +168,28 @@ public:
         return dynamicArray[index];
     }
 
+    std::size_t get_size() const
+    {
+        return size;
+    }
+};
+
+template <typename T>
+void insertion_sort(Vector<T>& arr)
+{
+    for (std::size_t i = 1; i < arr.get_size(); i++)
+    {
+        T value = arr[static_cast<int>(i)];
+        int j = static_cast<int>(i) - 1;
+
+        while (j >= 0 && arr[j] > value)
+        {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+
+        arr[j + 1] = value;
+    }
     std::size_t getSize() const
     {
         return size;
@@ -321,6 +343,12 @@ int main()
 {
     Vector<int> numbers;
 
+    intVector.resize(3);
+    intVector[0] = 93;
+    intVector[1] = 66;
+    intVector[2] = 69;
+
+    insertion_sort(intVector);
     int values[5] = { 66, 69, 93, 101, 202 };
 
     for (int i = 0; i < 5; i++)
